@@ -9,6 +9,7 @@ export default function Navbar() {
   const navItems = [
     { name: "홈", href: "/" },
     { name: "블로그", href: "/posts" },
+    { name: "글쓰기", href: "/posts/new" },
   ];
 
   return (
