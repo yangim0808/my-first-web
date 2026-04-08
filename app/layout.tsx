@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "내 블로그",
@@ -13,12 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>
-        <nav className="bg-gray-800 text-white px-6 py-4">
-          내 블로그
-        </nav>
-        <main className="max-w-4xl mx-auto p-6">{children}</main>
-        <footer className="text-center text-gray-500 py-6">
+      <body className="bg-gray-50 text-gray-900 min-h-screen">
+        <Navbar />
+        <main className="max-w-4xl mx-auto px-6 py-12">{children}</main>
+        <footer className="text-center text-gray-400 py-12 border-t mt-auto">
           © 2026 내 블로그
         </footer>
       </body>
