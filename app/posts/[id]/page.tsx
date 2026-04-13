@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { posts } from "@/lib/posts";
+import { getPostById } from "@/lib/posts";
 
 export default async function PostPage({
   params,
@@ -7,7 +7,7 @@ export default async function PostPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const post = posts.find((p) => p.id === parseInt(id));
+  const post = await getPostById(parseInt(id));
 
   if (!post) {
     return (
@@ -43,7 +43,7 @@ export default async function PostPage({
       </header>
       
       <article className="prose lg:prose-xl max-w-none text-gray-800 leading-relaxed">
-        {post.content.split('\n').map((paragraph, index) => (
+        {post.body.split('\n').map((paragraph: string, index: number) => (
           <p key={index} className="mb-4 text-lg">
             {paragraph}
           </p>

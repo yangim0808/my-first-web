@@ -12,6 +12,11 @@ export default function NewPostPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!title.trim()) {
+      alert("제목을 입력해주세요!");
+      return;
+    }
+    
     // 백엔드가 없으므로 mock 처리
     alert("저장되었습니다");
     router.push("/posts");
