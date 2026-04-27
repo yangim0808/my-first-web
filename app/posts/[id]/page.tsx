@@ -1,5 +1,14 @@
 import Link from "next/link";
 import { getPostById } from "@/lib/posts";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { ChevronLeft, User, Clock } from "lucide-react";
 
 export default async function PostPage({
   params,
@@ -11,53 +20,62 @@ export default async function PostPage({
 
   if (!post) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-gray-50">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">게시글을 찾을 수 없습니다</h1>
-        <Link
-          href="/posts"
-          className="text-blue-600 hover:text-blue-800 transition-colors"
-        >
-          &larr; 목록으로 돌아가기
-        </Link>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 space-y-4">
+        <h1 className="text-2xl font-bold text-muted-foreground">게시글을 찾을 수 없습니다</h1>
+        <Button variant="link" asChild>
+          <Link href="/posts">
+            <ChevronLeft className="mr-1 h-4 w-4" /> 목록으로 돌아가기
+          </Link>
+        </Button>
       </div>
     );
   }
 
   return (
-    <main className="max-w-4xl mx-auto p-8 min-h-screen bg-white shadow-sm border border-gray-100 rounded-lg my-8">
-      <header className="mb-8 border-b pb-6">
-        <Link
-          href="/posts"
-          className="text-blue-600 hover:text-blue-800 transition-colors mb-4 inline-block"
-        >
-          &larr; 목록으로 돌아가기
-        </Link>
-        <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">
-          {post.title}
-        </h1>
-        <div className="mt-4 flex items-center text-gray-500 text-sm">
-          <span className="font-semibold">{post.author}</span>
-          <span className="mx-2">•</span>
-          <time dateTime={post.date}>{post.date}</time>
-        </div>
+    <main className="max-w-4xl mx-auto py-12 px-6">
+      <header className="mb-8">
+        <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-primary mb-4 h-8">
+          <Link href="/posts">
+            <ChevronLeft className="mr-1 h-4 w-4" /> 목록으로 돌아가기
+          </Link>
+        </Button>
       </header>
-      
-      <article className="prose lg:prose-xl max-w-none text-gray-800 leading-relaxed">
-        {post.body.split('\n').map((paragraph: string, index: number) => (
-          <p key={index} className="mb-4 text-lg">
-            {paragraph}
-          </p>
-        ))}
-      </article>
 
-      <footer className="mt-12 pt-8 border-t">
-        <Link
-          href="/posts"
-          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-md"
-        >
-          목록으로 돌아가기
-        </Link>
-      </footer>
+      <Card className="rounded-2xl shadow-sm border-foreground/10 overflow-hidden">
+        <CardHeader className="pb-8 border-b bg-muted/20">
+          <CardTitle className="text-4xl font-extrabold tracking-tight leading-tight">
+            {post.title}
+          </CardTitle>
+          <div className="mt-6 flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
+            <div className="flex items-center gap-1.5">
+              <User className="h-4 w-4" />
+              <span className="font-semibold text-foreground">{post.author}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              <time dateTime={post.date}>{post.date}</time>
+            </div>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="pt-10 pb-12 prose prose-slate max-w-none">
+          <div className="text-foreground leading-relaxed text-lg space-y-4">
+            {post.body.split('\n').map((paragraph: string, index: number) => (
+              <p key={index}>
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </CardContent>
+
+        <CardFooter className="bg-muted/30 p-6 flex justify-center border-t">
+          <Button variant="outline" asChild className="px-8 h-11 rounded-xl">
+            <Link href="/posts">
+              목록으로 돌아가기
+            </Link>
+          </Button>
+        </CardFooter>
+      </Card>
     </main>
   );
 }
