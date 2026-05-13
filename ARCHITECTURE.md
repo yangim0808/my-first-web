@@ -44,10 +44,17 @@ Next.js App Router 기반의 전체 URL 아키텍처입니다.
 - **동작 플로우:** 본문을 읽고, 현재 유저 세션이 글 작성자와 일치할 경우 수정/삭제 `Button`이 활성화됩니다. 글 삭제 시 `Dialog`로 한 번 더 의사를 묻습니다.
 
 ## 4. 인증 (Authentication)
-- **방식:** **이메일 & 비밀번호 로그인** (Supabase Auth 활용)
+- **방식:** **이메일 & 비밀번호 로그인** (Supabase Auth 활용, `signInWithPassword` 사용)
+- **제한 기법:** `middleware.ts`를 활용하여 보호 라우트를 설정합니다. 소셜 로그인은 지원하지 않으며 클라이언트에 `service_role` 값은 절대 노출하지 않습니다.
 - **페이지 권한 (인가 구조):**
   - 조회 (홈, 글 목록, 글 상세 읽기): 모든 사용자 가능(비로그인 포함)
   - 작성 및 삭제 (방문 권한): 로그인된 사용자(`users` 존재 확인)만 가능
+
+## Version Policy
+- 교재 기준: Next.js 16.2.1, @supabase/supabase-js 2.47.12, @supabase/ssr 0.5.2
+- 실제 package.json이 더 최신일 수 있다.
+- 수업 프롬프트와 설명은 교재 기준으로 통일한다.
+- 빌드 오류가 버전 차이에서 발생하면 package.json 기준으로 원인을 확인한다.
 
 ## 5. UI 컴포넌트 구조 및 디자인 토큰
 ### 5.1. 컴포넌트 계층 (shadcn/ui 기반)

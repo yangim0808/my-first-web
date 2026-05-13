@@ -4,6 +4,14 @@
 - React 19.2.4
 - Tailwind CSS 4
 - shadcn/ui (components/ui/ 경로에 설치됨)
+- @supabase/supabase-js 2.47.12
+- @supabase/ssr 0.5.2
+
+## Version Policy
+- 교재 기준: Next.js 16.2.1, @supabase/supabase-js 2.47.12, @supabase/ssr 0.5.2
+- 실제 package.json이 더 최신일 수 있다.
+- 수업 프롬프트와 설명은 교재 기준으로 통일한다.
+- 빌드 오류가 버전 차이에서 발생하면 package.json 기준으로 원인을 확인한다.
 
 ## Coding Conventions
 
@@ -33,3 +41,6 @@
 - Do not use `next/router`; use `next/navigation` when navigation is needed.
 - Do not create `pages/` router files; this project uses the App Router.
 - Do not add `"use client"` unless interactivity or browser APIs are actually needed.
+- Do not use `auth.signIn()`; always use `signInWithPassword` for Supabase Email/Password login.
+- Do not expose `service_role` key on the client.
+- Do not implement social login (only Email/Password is supported).
