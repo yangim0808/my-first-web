@@ -29,15 +29,24 @@ export default function SignUpPage() {
     setIsLoading(true);
     setError(null);
 
-    const { error: signUpError } = await signUpWithEmail(email, password, name);
+    try {
+      const { error: signUpError } = await signUpWithEmail(email, password, name);
 
-    if (signUpError) {
-      setError(signUpError.message);
-    } else {
-      setIsSuccessDialogOpen(true);
+      if (signUpError) {
+        setError(signUpError.message);
+      } else {
+        setIsSuccessDialogOpen(true);
+      }
+    } catch (err: any) {
+      console.error("Signup error:", err);
+      setError(
+        err.message?.includes("supabaseUrl is required")
+          ? "Supabase 환경 변수가 설정되지 않았습니다. .env.local 파일을 확인해 주세요."
+          : err.message || "알 수 없는 오류가 발생했습니다."
+      );
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
@@ -83,7 +92,7 @@ export default function SignUpPage() {
             </div>
             
             {error && (
-              <div className="text-sm text-red-500 font-medium">
+              <div className="text-sm text-red-500 font-medium break-keep">
                 {error}
               </div>
             )}

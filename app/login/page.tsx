@@ -28,13 +28,22 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
 
-    const { error: signInError } = await signInWithEmail(email, password);
+    try {
+      const { error: signInError } = await signInWithEmail(email, password);
 
-    if (signInError) {
-      setError(signInError.message);
-      setIsLoading(false);
-    } else {
-      setIsSuccessDialogOpen(true);
+      if (signInError) {
+        setError(signInError.message);
+      } else {
+        setIsSuccessDialogOpen(true);
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(
+        err.message?.includes("supabaseUrl is required")
+          ? "Supabase 환경 변수가 설정되지 않았습니다. .env.local 파일을 확인해 주세요."
+          : err.message || "알 수 없는 오류가 발생했습니다."
+      );
+    } finally {
       setIsLoading(false);
     }
   };
@@ -70,7 +79,7 @@ export default function LoginPage() {
             </div>
             
             {error && (
-              <div className="text-sm text-red-500 font-medium">
+              <div className="text-sm text-red-500 font-medium break-keep">
                 {error}
               </div>
             )}
