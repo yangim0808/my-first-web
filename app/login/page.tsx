@@ -6,12 +6,21 @@ import { signInWithEmail } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -25,7 +34,8 @@ export default function LoginPage() {
       setError(signInError.message);
       setIsLoading(false);
     } else {
-      router.push("/posts");
+      setIsSuccessDialogOpen(true);
+      setIsLoading(false);
     }
   };
 
@@ -71,6 +81,22 @@ export default function LoginPage() {
           </form>
         </CardContent>
       </Card>
+
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>로그인 완료</DialogTitle>
+            <DialogDescription>
+              성공적으로 로그인되었습니다. 메인 로비로 이동합니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => router.push("/posts")}>
+              확인
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
