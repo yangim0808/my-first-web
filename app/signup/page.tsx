@@ -6,6 +6,14 @@ import { signUpWithEmail } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -13,25 +21,20 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setSuccessMsg(null);
 
     const { error: signUpError } = await signUpWithEmail(email, password, name);
 
     if (signUpError) {
       setError(signUpError.message);
     } else {
-      setSuccessMsg("가입 완료. 로그인하세요.");
-      // 약간의 지연 후 로그인 페이지로 이동 시키거나, 유저가 직접 이동하도록 둡니다.
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+      setIsSuccessDialogOpen(true);
     }
     
     setIsLoading(false);
@@ -84,12 +87,6 @@ export default function SignUpPage() {
                 {error}
               </div>
             )}
-
-            {successMsg && (
-              <div className="text-sm text-green-600 font-medium">
-                {successMsg}
-              </div>
-            )}
             
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "가입 처리 중..." : "회원가입"}
@@ -97,6 +94,22 @@ export default function SignUpPage() {
           </form>
         </CardContent>
       </Card>
+
+      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>가입 완료</DialogTitle>
+            <DialogDescription>
+              성공적으로 회원가입이 완료되었습니다. 로그인해 주세요.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => router.push("/login")}>
+              로그인하러 가기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
