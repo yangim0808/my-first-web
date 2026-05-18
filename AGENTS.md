@@ -46,3 +46,5 @@
 - Do not use `auth.signIn()`; always use `signInWithPassword` for Supabase Email/Password login.
 - Do not expose `service_role` key on the client.
 - Do not implement social login (only Email/Password is supported).
+- For Post CRUD (Ch10): Always use `lib/supabase/client.ts` (Ch8) and `useAuth`/`AuthProvider` (Ch9) state.
+- Do not implement actual DB-level RLS restrictions for edits/deletes during Ch10; focus only on frontend UX initially. RLS will be deferred to Ch11.

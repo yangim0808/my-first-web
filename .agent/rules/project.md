@@ -16,3 +16,4 @@
 - 보호 라우트 파일로 `middleware.ts`를 사용한다.
 - Supabase Auth 로그인은 `signInWithPassword`를 사용한다. 구버전 `auth.signIn()`은 사용하지 않는다.
 - `service_role` 키는 클라이언트에 절대 두지 않는다.
+- Ch10 게시글 CRUD: `lib/supabase/client.ts`(Ch8), `useAuth/AuthProvider`(Ch9) 활용. 작성/수정/삭제 등의 기능은 페이지 UX에 집중하며, 실제 데이터베이스 권한 보안은 모두 Ch11 RLS로 연기한다.

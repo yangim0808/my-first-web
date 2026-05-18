@@ -30,3 +30,4 @@ AGENT.md를 참조한다.
 - 보호 라우트: middleware.ts 사용
 - service_role 키 클라이언트 노출 금지
 - App Router 전용: next/router 금지
+- Ch10 CRUD 구현: Ch8의 `lib/supabase/client.ts` 및 Ch9의 `useAuth/AuthProvider`를 필수로 사용. (실제 수정/삭제 RLS 보안은 Ch11에서 구현하므로, Ch10은 프론트엔드 UX 위주로 개발할 것)
