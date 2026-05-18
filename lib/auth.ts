@@ -17,10 +17,18 @@ export async function signUpWithEmail(email: string, password: string, name: str
     password,
     options: {
       data: {
-        name, // 혹은 username 등 프로젝트에서 프로필 표시에 사용할 필드명
+        name,
       },
     },
   });
+  
+  if (!error && data.user) {
+    // 트리거가 작동하지 않을 경우를 대비해 수동으로 프로필을 생성합니다.
+    await supabase.from('profiles').upsert({
+      id: data.user.id,
+      username: name,
+    });
+  }
   
   return { data, error };
 }
