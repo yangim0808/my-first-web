@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,24 +9,60 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 
-export default function NewPostPage() {
-  const { user, loading } = useAuth();
+export default function EditPostPage() {
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const id = params?.id as string;
   
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    }
-  }, [user, loading, router]);
+    if (!id || authLoading) return;
 
-  if (loading || !user) return null;
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    const fetchPost = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+        
+        // [UI 전용] 작성자 본인만 수정할 수 있도록 클라이언트에서 확인합니다.
+        // 이 조건은 보안이 아닙니다. 실제 DB 수준 보안(RLS)은 Ch11에서 구현합니다.
+        if (data.user_id !== user.id) {
+          alert("수정 권한이 없습니다.");
+          router.replace(`/posts/${id}`);
+          return;
+        }
+
+        setTitle(data.title);
+        setContent(data.content);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Failed to fetch post:", err);
+        setError("글을 불러오지 못했습니다.");
+        setIsLoading(false);
+      }
+    };
+
+    fetchPost();
+  }, [id, user, authLoading, router]);
+
+  if (authLoading || isLoading) return <div className="text-center mt-12">로딩 중...</div>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,22 +70,17 @@ export default function NewPostPage() {
     setError(null);
 
     const supabase = createClient();
-    const { data, error: insertError } = await supabase
+    const { error: updateError } = await supabase
       .from("posts")
-      .insert({
-        title,
-        content,
-        user_id: user.id
-      })
-      .select('id')
-      .single();
+      .update({ title, content })
+      .eq("id", id);
 
-    if (insertError) {
-      console.error(insertError);
-      setError("글 작성에 실패했습니다. 다시 시도해 주세요.");
+    if (updateError) {
+      console.error(updateError);
+      setError("글 수정에 실패했습니다. 다시 시도해 주세요.");
       setIsSubmitting(false);
     } else {
-      router.push(`/posts/${data.id}`);
+      router.push(`/posts/${id}`);
       router.refresh();
     }
   };
@@ -57,16 +88,14 @@ export default function NewPostPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="mb-4">
-        <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-primary h-8">
-          <Link href="/posts">
-            <ChevronLeft className="mr-1 h-4 w-4" /> 목록으로 돌아가기
-          </Link>
+        <Button variant="ghost" type="button" onClick={() => router.back()} className="-ml-4 text-muted-foreground hover:text-primary h-8">
+          <ChevronLeft className="mr-1 h-4 w-4" /> 상세로 돌아가기
         </Button>
       </div>
       
       <Card className="rounded-lg shadow-sm">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">새 포스트 작성</CardTitle>
+          <CardTitle className="text-2xl font-bold">포스트 수정</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -106,7 +135,7 @@ export default function NewPostPage() {
                 취소
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "저장 중..." : "글 등록"}
+                {isSubmitting ? "저장 중..." : "수정 완료"}
               </Button>
             </div>
           </form>
