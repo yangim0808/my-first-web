@@ -28,6 +28,8 @@ export function PostActions({ postId, postAuthorId }: PostActionsProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [open, setOpen] = useState(false);
 
+  // [UI 전용] 작성자 본인에게만 버튼을 노출하기 위한 클라이언트 조건입니다.
+  // 이 조건은 보안이 아닙니다. 실제 DB 수준 보안(RLS)은 Ch11에서 구현합니다.
   if (!user || user.id !== postAuthorId) {
     return null;
   }

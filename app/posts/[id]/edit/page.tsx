@@ -41,6 +41,8 @@ export default function EditPostPage() {
 
         if (error) throw error;
         
+        // [UI 전용] 작성자 본인만 수정할 수 있도록 클라이언트에서 확인합니다.
+        // 이 조건은 보안이 아닙니다. 실제 DB 수준 보안(RLS)은 Ch11에서 구현합니다.
         if (data.user_id !== user.id) {
           alert("수정 권한이 없습니다.");
           router.replace(`/posts/${id}`);
