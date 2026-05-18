@@ -61,7 +61,9 @@ export default function SignUpPage() {
               <label htmlFor="name" className="text-sm font-medium">이름</label>
               <Input
                 id="name"
+                name="name"
                 type="text"
+                autoComplete="name"
                 placeholder="홍길동"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -72,7 +74,9 @@ export default function SignUpPage() {
               <label htmlFor="email" className="text-sm font-medium">이메일</label>
               <Input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="name@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -83,7 +87,9 @@ export default function SignUpPage() {
               <label htmlFor="password" className="text-sm font-medium">비밀번호</label>
               <Input
                 id="password"
+                name="password"
                 type="password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

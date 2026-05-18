@@ -22,6 +22,9 @@ export default async function PostsPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between pb-4 border-b">
         <h1 className="text-3xl font-bold tracking-tight">전체 게시글</h1>
+        <Button asChild>
+          <Link href="/posts/new">새 글 쓰기</Link>
+        </Button>
       </div>
 
       {/* md 이상부터 2열 그리드, 모바일은 1열 */}
@@ -31,12 +34,12 @@ export default async function PostsPage() {
             <CardHeader>
               <CardTitle className="text-xl line-clamp-2">{post.title}</CardTitle>
               <CardDescription>
-                {post.author && <span>{post.author}</span>}
-                {post.date && <span className="ml-2 before:content-['•'] before:mr-2">{post.date}</span>}
+                {post.profiles?.username && <span>{post.profiles.username}</span>}
+                {post.created_at && <span className="ml-2 before:content-['•'] before:mr-2">{new Date(post.created_at).toLocaleDateString()}</span>}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-1">
-              <p className="text-muted-foreground line-clamp-3">{post.body}</p>
+              <p className="text-muted-foreground line-clamp-3">{post.content}</p>
             </CardContent>
             <CardFooter>
               <Button asChild variant="default" className="w-full">

@@ -9,6 +9,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { ChevronLeft, User, Clock } from "lucide-react";
+import { PostActions } from "@/components/PostActions";
 
 export default async function PostPage({
   params,
@@ -16,7 +17,7 @@ export default async function PostPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const post = await getPostById(parseInt(id));
+  const post = await getPostById(id);
 
   if (!post) {
     return (
@@ -49,23 +50,25 @@ export default async function PostPage({
           <div className="mt-6 flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
             <div className="flex items-center gap-1.5">
               <User className="h-4 w-4" />
-              <span className="font-semibold text-foreground">{post.author}</span>
+              <span className="font-semibold text-foreground">{post.profiles?.username || "익명"}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
-              <time dateTime={post.date}>{post.date}</time>
+              <time dateTime={post.created_at}>{new Date(post.created_at).toLocaleDateString()}</time>
             </div>
           </div>
         </CardHeader>
         
         <CardContent className="pt-10 pb-12 prose prose-slate max-w-none">
           <div className="text-foreground leading-relaxed text-lg space-y-4">
-            {post.body.split('\n').map((paragraph: string, index: number) => (
+            {post.content.split('\n').map((paragraph: string, index: number) => (
               <p key={index}>
                 {paragraph}
               </p>
             ))}
           </div>
+          
+          <PostActions postId={post.id} postAuthorId={post.user_id} />
         </CardContent>
 
         <CardFooter className="bg-muted/30 p-6 flex justify-center border-t">
