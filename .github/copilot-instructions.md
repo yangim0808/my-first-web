@@ -23,6 +23,8 @@ AGENT.md를 참조한다.
 - 빌드 오류가 버전 차이에서 발생하면 package.json 기준으로 원인을 확인한다.
 
 ## Supabase Rules
+- 코드·패키지 설명은 Ch7·Ch8 교재 기준을 따른다.
+- Supabase 대시보드 메뉴 안내만 2026년 5월 기준이다.
 - 환경변수 이름 유지: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
 - Auth 인증: 이메일/비밀번호만 지원 (signInWithPassword 사용, auth.signIn 절대 사용 금지, 소셜 로그인 X)
 - 보호 라우트: middleware.ts 사용

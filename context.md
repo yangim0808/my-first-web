@@ -12,6 +12,7 @@
 - 인증: Supabase Auth (Email/Password), `signInWithPassword` 사용, `middleware.ts`로 보호 라우트 처리, 소셜 로그인 X
 - 상태관리: React Context (AuthProvider)
 - 이미지: Supabase Storage 사용 예정
+- 기타: 코드/패키지 설명은 Ch7/Ch8 교재 기준, Supabase 대시보드 설명은 2026년 5월 기준 적용
 
 ## Version Policy
 - 교재 기준: Next.js 16.2.1, @supabase/supabase-js 2.47.12, @supabase/ssr 0.5.2

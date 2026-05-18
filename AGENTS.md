@@ -38,6 +38,8 @@
 
 ## Known AI Mistakes
 
+- **코드·패키지 설명은 Ch7·Ch8 교재 기준을 따른다.**
+- **Supabase 대시보드 메뉴 안내만 2026년 5월 기준이다.**
 - Do not use `next/router`; use `next/navigation` when navigation is needed.
 - Do not create `pages/` router files; this project uses the App Router.
 - Do not add `"use client"` unless interactivity or browser APIs are actually needed.
