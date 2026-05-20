@@ -46,7 +46,7 @@ export default function NewPostPage() {
 
     if (insertError) {
       console.error(insertError);
-      setError("글 작성에 실패했습니다. 다시 시도해 주세요.");
+      setError(`글 작성에 실패했습니다: ${insertError.message} / 세부정보: ${insertError.details || '없음'}`);
       setIsSubmitting(false);
     } else {
       router.push(`/posts/${data.id}`);
