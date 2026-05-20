@@ -16,6 +16,8 @@ export const metadata = {
   description: "블로그의 모든 게시글 목록입니다.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function PostsPage() {
   const posts = await getPosts();
 
