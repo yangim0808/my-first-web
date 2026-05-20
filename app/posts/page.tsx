@@ -9,6 +9,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { NewPostButton } from "@/components/NewPostButton";
 
 export const metadata = {
   title: "게시글 목록 | 블로그",
@@ -22,10 +23,9 @@ export default async function PostsPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between pb-4 border-b">
         <h1 className="text-3xl font-bold tracking-tight">전체 게시글</h1>
-        <Button asChild>
-          <Link href="/posts/new">새 글 쓰기</Link>
-        </Button>
+        <NewPostButton />
       </div>
+
 
       {/* md 이상부터 2열 그리드, 모바일은 1열 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
