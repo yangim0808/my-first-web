@@ -8,8 +8,11 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { ChevronLeft, User, Clock } from "lucide-react";
+import { ChevronLeft, User, Clock, Eye } from "lucide-react";
 import { PostActions } from "@/components/PostActions";
+import { ViewTracker } from "@/components/ViewTracker";
+import { ReactionButtons } from "@/components/ReactionButtons";
+import { CommentSection } from "@/components/CommentSection";
 
 export default async function PostPage({
   params,
@@ -34,6 +37,7 @@ export default async function PostPage({
 
   return (
     <main className="max-w-4xl mx-auto py-12 px-6">
+      <ViewTracker postId={post.id} />
       <header className="mb-8">
         <Button variant="ghost" asChild className="-ml-4 text-muted-foreground hover:text-primary mb-4 h-8">
           <Link href="/posts">
@@ -56,6 +60,10 @@ export default async function PostPage({
               <Clock className="h-4 w-4" />
               <time dateTime={post.created_at}>{new Date(post.created_at).toLocaleDateString()}</time>
             </div>
+            <div className="flex items-center gap-1.5">
+              <Eye className="h-4 w-4" />
+              <span>{post.view_count || 0} views</span>
+            </div>
           </div>
         </CardHeader>
         
@@ -68,15 +76,25 @@ export default async function PostPage({
             ))}
           </div>
           
-          <PostActions postId={post.id} postAuthorId={post.user_id} />
+          <ReactionButtons postId={post.id} />
+          
+          <div className="mt-8">
+            <PostActions postId={post.id} postAuthorId={post.user_id} />
+          </div>
         </CardContent>
 
-        <CardFooter className="bg-muted/30 p-6 flex justify-center border-t">
-          <Button variant="outline" asChild className="px-8 h-11 rounded-xl">
-            <Link href="/posts">
-              목록으로 돌아가기
-            </Link>
-          </Button>
+        <CardFooter className="bg-muted/30 p-6 flex flex-col border-t">
+          <div className="w-full flex justify-center mb-12">
+            <Button variant="outline" asChild className="px-8 h-11 rounded-xl">
+              <Link href="/posts">
+                목록으로 돌아가기
+              </Link>
+            </Button>
+          </div>
+
+          <div className="w-full border-t pt-8">
+            <CommentSection postId={post.id} />
+          </div>
         </CardFooter>
       </Card>
     </main>

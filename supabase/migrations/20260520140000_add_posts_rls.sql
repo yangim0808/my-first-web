@@ -58,4 +58,4 @@ CREATE POLICY "Enable delete for users based on user_id"
 ON public.posts
 AS PERMISSIVE FOR DELETE
 TO authenticated
-USING (auth.
+USING (auth.uid() = user_id);
