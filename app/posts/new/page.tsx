@@ -34,6 +34,13 @@ export default function NewPostPage() {
     setError(null);
 
     const supabase = createClient();
+
+    // 외래키 오류 방지를 위해 현재 사용자의 프로필이 없으면 자동 생성(복구)
+    await supabase.from("profiles").upsert({
+      id: user.id,
+      username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
+    }, { onConflict: 'id', ignoreDuplicates: true });
+
     const { data, error: insertError } = await supabase
       .from("posts")
       .insert({
