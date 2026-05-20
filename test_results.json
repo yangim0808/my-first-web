@@ -1,0 +1,8 @@
+{
+  "비로그인 조회": "Error: Invalid API key",
+  "비로그인 작성": "Blocked (Invalid API key)",
+  "A SignUp Error": "Invalid API key",
+  "사용자 A 작성": "Error: Invalid API key",
+  "B SignUp Error": "Invalid API key",
+  "사용자 B Test": "Skipped because A could not insert."
+}
