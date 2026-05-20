@@ -49,10 +49,13 @@ Next.js App Router 기반의 전체 URL 아키텍처입니다.
 - **페이지 권한 (인가 구조):**
   - 조회 (홈, 글 목록, 글 상세 읽기): 모든 사용자 가능(비로그인 포함)
   - 작성 및 삭제 (방문 권한): 로그인된 사용자(`users` 존재 확인)만 가능
+  - **보안 핵심(Ch11):** 클라이언트 UI 분기는 UX를 위함이며, 실제 보안은 DB의 RLS가 담당합니다. RLS 설정은 대시보드 SQL Editor가 아닌 CLI 마이그레이션 파일로 관리합니다.
+  - `posts` 테이블의 `user_id`와 `auth.uid()`를 기준으로 정책을 만듭니다.
 - **참고사항:** 코드·패키지 설명은 Ch7·Ch8 교재 기준을 따르며, Supabase 대시보드 메뉴 안내만 2026년 5월 기준입니다.
 
 ## Version Policy
 - 교재 기준: Next.js 16.2.1, @supabase/supabase-js 2.47.12, @supabase/ssr 0.5.2
+- 실제 설치 기준(package.json): Next.js 16.2.1, @supabase/supabase-js ^2.105.4, @supabase/ssr ^0.10.3, react 19.2.4
 - 실제 package.json이 더 최신일 수 있다.
 - 수업 프롬프트와 설명은 교재 기준으로 통일한다.
 - 빌드 오류가 버전 차이에서 발생하면 package.json 기준으로 원인을 확인한다.
