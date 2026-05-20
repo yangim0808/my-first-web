@@ -44,6 +44,20 @@ export function CommentSection({ postId }: { postId: string }) {
     }
     if (!newComment.trim()) return;
 
+    // 1. 프로필이 존재하는지 유효성 검증 (없을 경우 자동 생성하여 FK 에러 방지)
+    const { data: profileExists } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profileExists) {
+      await supabase.from("profiles").insert({
+        id: user.id,
+        username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
+      });
+    }
+
     const { data, error } = await supabase
       .from("comments")
       .insert({

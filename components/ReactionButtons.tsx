@@ -44,6 +44,20 @@ export function ReactionButtons({ postId }: { postId: string }) {
 
     const supabase = createClient();
     
+    // 1. 프로필이 존재하는지 유효성 검증 (FK 에러 방지)
+    const { data: profileExists } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profileExists) {
+      await supabase.from("profiles").insert({
+        id: user.id,
+        username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
+      });
+    }
+
     if (userReaction === type) {
       // Remove reaction
       await supabase
