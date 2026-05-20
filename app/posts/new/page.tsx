@@ -35,15 +35,29 @@ export default function NewPostPage() {
 
     const supabase = createClient();
 
-    // 외래키 오류 방지를 위해 현재 사용자의 프로필이 없으면 자동 생성(복구)
-    const { error: profileError } = await supabase.from("profiles").upsert({
-      id: user.id,
-      username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
-    }, { onConflict: 'id', ignoreDuplicates: true });
+    // 1. 프로필이 있는지 먼저 확인
+    const { data: profileExists, error: checkError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    if (profileError) {
-      console.error("Profile upsert error:", profileError);
-      setError(`프로필 확인 중 오류가 발생했습니다. (세션이 만료되었거나 DB가 초기화되었을 수 있습니다. 로그아웃 후 다시 로그인해보세요.) 세부정보: ${profileError.message}`);
+    if (!profileExists && !checkError) {
+      // 2. 프로필이 없으면 직접 INSERT
+      const { error: insertProfileError } = await supabase.from("profiles").insert({
+        id: user.id,
+        username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
+      });
+
+      if (insertProfileError) {
+        console.error("Profile insert error:", insertProfileError);
+        setError(`프로필 생성 실패: ${insertProfileError.message} / 세부정보: ${insertProfileError.details}`);
+        setIsSubmitting(false);
+        return;
+      }
+    } else if (checkError) {
+      console.error("Profile check error:", checkError);
+      setError(`프로필 확인 실패: ${checkError.message}`);
       setIsSubmitting(false);
       return;
     }
