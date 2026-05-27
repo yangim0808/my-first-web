@@ -18,9 +18,12 @@ test.describe('Authentication and Post CRUD Flow', () => {
     await page.getByRole('button', { name: '로그인' }).click();
 
     // 로그인 성공 다이얼로그 확인 및 이동
-    await expect(page.getByText('성공적으로 로그인되었습니다')).toBeVisible();
+    // Webkit 등 브라우저 속도 차이를 고려하여 타임아웃을 늘리고 텍스트가 포함된 요소를 기다립니다.
+    await expect(page.getByText('성공적으로 로그인되었습니다', { exact: false })).toBeVisible({ timeout: 10000 });
     await page.getByRole('button', { name: '확인' }).click();
-    await expect(page).toHaveURL(/\/posts/);
+    
+    // /posts 목록으로 이동 확인
+    await expect(page).toHaveURL(/\/posts/, { timeout: 10000 });
 
     // 2. /posts/new에서 새 글 작성
     await page.goto('/posts/new');
