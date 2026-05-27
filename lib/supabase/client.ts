@@ -5,13 +5,13 @@ export function createClient() {
     return {
       auth: {
         getUser: async () => ({
-          data: { user: typeof window !== "undefined" ? JSON.parse(localStorage.getItem("mock-user") || "null") : null },
+          data: { user: typeof window !== "undefined" ? JSON.parse(sessionStorage.getItem("mock-user") || "null") : null },
           error: null
         }),
         signInWithPassword: async () => ({ data: { user: { id: "mock-id" } }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
         signOut: async () => {
-          if (typeof window !== "undefined") localStorage.removeItem("mock-user");
+          if (typeof window !== "undefined") sessionStorage.removeItem("mock-user");
           return { error: null };
         }
       },
@@ -45,6 +45,12 @@ export function createClient() {
 
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        storage: typeof window !== "undefined" ? window.sessionStorage : undefined,
+        persistSession: true,
+      },
+    }
   )
 }

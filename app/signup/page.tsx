@@ -37,7 +37,7 @@ export default function SignUpPage() {
         setError(getErrorMessage(signUpError));
       } else {
         if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true" && data.user) {
-          localStorage.setItem("mock-user", JSON.stringify(data.user));
+          sessionStorage.setItem("mock-user", JSON.stringify(data.user));
         }
         setIsSuccessDialogOpen(true);
       }

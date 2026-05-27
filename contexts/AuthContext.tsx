@@ -17,10 +17,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true") {
-      // Mock 모드: 로컬 스토리에서 세션 시뮬레이션
-      const mockUser = localStorage.getItem("mock-user");
-      if (mockUser) {
-        setUser(JSON.parse(mockUser));
+      // Mock 모드: 세션 스토리지에서 세션 시뮬레이션
+      const savedMockUser = sessionStorage.getItem("mock-user");
+      if (savedMockUser) {
+        setUser(JSON.parse(savedMockUser));
       }
       setLoading(false);
       return;
@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const supabase = createClient();
     
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
       setUser(user);
       setLoading(false);
     });

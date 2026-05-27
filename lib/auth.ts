@@ -58,7 +58,7 @@ export async function signUpWithEmail(email: string, password: string, name: str
 export async function signOut() {
   if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true") {
     console.log("Using Mock Auth for sign out");
-    localStorage.removeItem("mock-user");
+    sessionStorage.removeItem("mock-user");
     return { error: null };
   }
 
