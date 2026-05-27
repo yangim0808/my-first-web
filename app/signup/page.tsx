@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUpWithEmail } from "@/lib/auth";
+import { getErrorMessage } from "@/lib/error-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,17 +34,13 @@ export default function SignUpPage() {
       const { error: signUpError } = await signUpWithEmail(email, password, name);
 
       if (signUpError) {
-        setError(signUpError.message);
+        setError(getErrorMessage(signUpError));
       } else {
         setIsSuccessDialogOpen(true);
       }
     } catch (err: any) {
       console.error("Signup error:", err);
-      setError(
-        err.message?.includes("supabaseUrl is required")
-          ? "Supabase 환경 변수가 설정되지 않았습니다. .env.local 파일을 확인해 주세요."
-          : err.message || "알 수 없는 오류가 발생했습니다."
-      );
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
