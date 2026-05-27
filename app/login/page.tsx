@@ -30,11 +30,14 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error: signInError } = await signInWithEmail(email, password);
+      const { data, error: signInError } = await signInWithEmail(email, password);
 
       if (signInError) {
         setError(getErrorMessage(signInError));
       } else {
+        if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true" && data.user) {
+          localStorage.setItem("mock-user", JSON.stringify(data.user));
+        }
         setIsSuccessDialogOpen(true);
       }
     } catch (err: any) {
