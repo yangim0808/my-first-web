@@ -19,6 +19,7 @@ export default function NewPostPage() {
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; content?: string }>({});
 
   useEffect(() => {
     if (!loading && !user) {
@@ -30,56 +31,74 @@ export default function NewPostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
+    
+    // 클라이언트 유효성 검증
+    const newFieldErrors: { title?: string; content?: string } = {};
+    if (title.trim().length < 2) {
+      newFieldErrors.title = "제목은 최소 2자 이상이어야 합니다.";
+    }
+    if (content.trim().length < 10) {
+      newFieldErrors.content = "내용은 최소 10자 이상이어야 합니다.";
+    }
 
-    const supabase = createClient();
-
-    // 1. 프로필이 있는지 먼저 확인
-    const { data: profileExists, error: checkError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (!profileExists && !checkError) {
-      // 2. 프로필이 없으면 직접 INSERT
-      const { error: insertProfileError } = await supabase.from("profiles").insert({
-        id: user.id,
-        username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
-      });
-
-      if (insertProfileError) {
-        console.error("Profile insert error:", insertProfileError);
-        setError(`프로필 생성 실패: ${insertProfileError.message} / 세부정보: ${insertProfileError.details}`);
-        setIsSubmitting(false);
-        return;
-      }
-    } else if (checkError) {
-      console.error("Profile check error:", checkError);
-      setError(`프로필 확인 실패: ${checkError.message}`);
-      setIsSubmitting(false);
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
       return;
     }
 
-    const { data, error: insertError } = await supabase
+    setIsSubmitting(true);
+    setError(null);
+    setFieldErrors({});
 
-      .from("posts")
-      .insert({
-        title,
-        content,
-        user_id: user.id
-      })
-      .select('id')
-      .single();
+    const supabase = createClient();
 
-    if (insertError) {
-      console.error(insertError);
-      setError(`글 작성에 실패했습니다: ${insertError.message} / 세부정보: ${insertError.details || '없음'}`);
-      setIsSubmitting(false);
-    } else {
+    try {
+      // 1. 프로필이 있는지 먼저 확인
+      const { data: profileExists, error: checkError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Profile check error:", checkError);
+        throw new Error("프로필 확인 중 오류가 발생했습니다.");
+      }
+
+      if (!profileExists) {
+        // 2. 프로필이 없으면 직접 INSERT
+        const { error: insertProfileError } = await supabase.from("profiles").insert({
+          id: user.id,
+          username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
+        });
+
+        if (insertProfileError) {
+          console.error("Profile insert error:", insertProfileError);
+          throw new Error("프로필 생성 중 오류가 발생했습니다.");
+        }
+      }
+
+      const { data, error: insertError } = await supabase
+        .from("posts")
+        .insert({
+          title,
+          content,
+          user_id: user.id
+        })
+        .select('id')
+        .single();
+
+      if (insertError) {
+        console.error("Post insert error:", insertError);
+        throw new Error("글 작성 중 오류가 발생했습니다.");
+      }
+
       router.push(`/posts/${data.id}`);
       router.refresh();
+    } catch (err: any) {
+      setError(err.message || "알 수 없는 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -101,27 +120,32 @@ export default function NewPostPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="title" className="text-sm font-medium">제목</label>
-              <Input
-                id="title"
-                type="text"
-                placeholder="제목을 입력하세요"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+                <Input
+                  id="title"
+                  type="text"
+                  placeholder="제목을 입력하세요"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className={fieldErrors.title ? "border-red-500 focus-visible:ring-red-500" : ""}
+                />
+                {fieldErrors.title && (
+                  <p className="text-xs text-red-500">{fieldErrors.title}</p>
+                )}
             </div>
             
             <div className="space-y-2">
               <label htmlFor="content" className="text-sm font-medium">내용</label>
-              <Textarea
-                id="content"
-                placeholder="내용을 입력하세요"
-                rows={12}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                required
-                className="resize-y"
-              />
+                <Textarea
+                  id="content"
+                  placeholder="내용을 입력하세요"
+                  rows={12}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className={`resize-y ${fieldErrors.content ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                />
+                {fieldErrors.content && (
+                  <p className="text-xs text-red-500">{fieldErrors.content}</p>
+                )}
             </div>
 
             {error && (
