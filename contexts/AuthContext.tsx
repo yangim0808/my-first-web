@@ -38,8 +38,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     });
 
+    // 창/탭 닫을 때 로그아웃
+    const handlePageHide = () => {
+      supabase.auth.signOut();
+    };
+    window.addEventListener("pagehide", handlePageHide);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener("pagehide", handlePageHide);
     };
   }, []);
 
