@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface Reaction {
+  reaction_type: string;
+  user_id: string;
+}
+
 export function ReactionButtons({ postId }: { postId: string }) {
   const { user } = useAuth();
   const [likes, setLikes] = useState(0);
@@ -26,11 +31,12 @@ export function ReactionButtons({ postId }: { postId: string }) {
       .eq("post_id", postId);
 
     if (allReactions) {
-      setLikes(allReactions.filter(r => r.reaction_type === 'like').length);
-      setDislikes(allReactions.filter(r => r.reaction_type === 'dislike').length);
+      const reactions = allReactions as Reaction[];
+      setLikes(reactions.filter((r: Reaction) => r.reaction_type === 'like').length);
+      setDislikes(reactions.filter((r: Reaction) => r.reaction_type === 'dislike').length);
       
       if (user) {
-        const myReaction = allReactions.find(r => r.user_id === user.id);
+        const myReaction = reactions.find((r: Reaction) => r.user_id === user.id);
         setUserReaction(myReaction ? myReaction.reaction_type as 'like' | 'dislike' : null);
       }
     }
