@@ -39,7 +39,13 @@ export function createClient() {
           })
         }),
         upsert: async () => ({ error: null }),
-      })
+      }),
+      storage: {
+        from: (bucket: string) => ({
+          upload: async (path: string, file: File) => ({ data: { path }, error: null }),
+          getPublicUrl: (path: string) => ({ data: { publicUrl: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800" } }),
+        })
+      }
     } as any;
   }
 
