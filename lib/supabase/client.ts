@@ -165,14 +165,33 @@ export function createClient() {
 
   }
 
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    console.error("Supabase environment variables are missing!");
+    // Return a dummy client that fails gracefully instead of crashing
+    return {
       auth: {
-        storage: typeof window !== "undefined" ? window.sessionStorage : undefined,
-        persistSession: true,
+        signInWithPassword: async () => ({ data: { user: null }, error: { message: "Configuration error: Missing Supabase URL or Key" } }),
+        signUp: async () => ({ data: { user: null }, error: { message: "Configuration error: Missing Supabase URL or Key" } }),
+        getUser: async () => ({ data: { user: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        signOut: async () => ({ error: null }),
       },
-    }
-  )
+      from: () => ({
+        select: () => ({ eq: () => ({ order: () => ({ then: (r: any) => r({ data: [], error: null }) }), then: (r: any) => r({ data: [], error: null }) }) }),
+        insert: () => ({ select: () => ({ single: async () => ({ data: null, error: null }) }) }),
+        upsert: async () => ({ error: null }),
+        delete: () => ({ eq: () => ({ then: (r: any) => r({ error: null }) }) }),
+      }),
+    } as any;
+  }
+
+  return createBrowserClient(url, anonKey, {
+    auth: {
+      storage: typeof window !== "undefined" ? window.sessionStorage : undefined,
+      persistSession: true,
+    },
+  })
 }
