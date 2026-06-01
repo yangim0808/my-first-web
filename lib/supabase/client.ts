@@ -2,23 +2,23 @@ import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
   if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true") {
-    // sessionStorage helpers
+    // localStorage helpers
     const getStore = (key: string, fallback: string = "[]") =>
-      typeof window !== "undefined" ? JSON.parse(sessionStorage.getItem(key) || fallback) : JSON.parse(fallback);
+      typeof window !== "undefined" ? JSON.parse(localStorage.getItem(key) || fallback) : JSON.parse(fallback);
     const setStore = (key: string, value: any) => {
-      if (typeof window !== "undefined") sessionStorage.setItem(key, JSON.stringify(value));
+      if (typeof window !== "undefined") localStorage.setItem(key, JSON.stringify(value));
     };
 
     return {
       auth: {
         getUser: async () => ({
-          data: { user: typeof window !== "undefined" ? JSON.parse(sessionStorage.getItem("mock-user") || "null") : null },
+          data: { user: typeof window !== "undefined" ? JSON.parse(localStorage.getItem("mock-user") || "null") : null },
           error: null
         }),
         signInWithPassword: async () => ({ data: { user: { id: "mock-id" } }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
         signOut: async () => {
-          if (typeof window !== "undefined") sessionStorage.removeItem("mock-user");
+          if (typeof window !== "undefined") localStorage.removeItem("mock-user");
           return { error: null };
         }
       },
@@ -27,15 +27,16 @@ export function createClient() {
         // ── comments ──
         if (table === "comments") {
           return {
-            // fetchComments: .select("*, profiles(username)").eq("post_id", id).order(...)
             select: (_q: string) => ({
-              eq: (_col: string, _val: any) => ({
+              eq: (col: string, val: any) => ({
                 order: (_c: string, _o: any) => ({
-                  then: (resolve: any) => resolve({ data: getStore("mock-comments"), error: null }),
+                  then: (resolve: any) => {
+                    const comments = getStore("mock-comments").filter((c: any) => c[col] === val);
+                    resolve({ data: comments, error: null });
+                  },
                 }),
               }),
             }),
-            // handleSubmit: .insert({...}).select("*, profiles(username)").single()
             insert: (data: any) => {
               const comments = getStore("mock-comments");
               const newComment = {
@@ -51,10 +52,9 @@ export function createClient() {
                 }),
               };
             },
-            // handleDelete: .delete().eq("id", commentId)
             delete: () => ({
               eq: (col: string, val: any) => {
-                const comments = getStore("mock-comments").filter((c: any) => c.id !== val);
+                const comments = getStore("mock-comments").filter((c: any) => c[col] !== val);
                 setStore("mock-comments", comments);
                 return { then: (r: any) => r({ error: null }) };
               },
@@ -65,13 +65,14 @@ export function createClient() {
         // ── post_reactions ──
         if (table === "post_reactions") {
           return {
-            // fetchReactions: .select("reaction_type, user_id").eq("post_id", id)
             select: (_q: string) => ({
-              eq: (_col: string, _val: any) => ({
-                then: (resolve: any) => resolve({ data: getStore("mock-reactions"), error: null }),
+              eq: (col: string, val: any) => ({
+                then: (resolve: any) => {
+                  const reactions = getStore("mock-reactions").filter((r: any) => r[col] === val);
+                  resolve({ data: reactions, error: null });
+                },
               }),
             }),
-            // handleReact (upsert): .upsert({...}, { onConflict: ... })
             upsert: async (data: any, _opts?: any) => {
               let reactions = getStore("mock-reactions");
               reactions = reactions.filter((r: any) => !(r.user_id === data.user_id && r.post_id === data.post_id));
@@ -79,7 +80,6 @@ export function createClient() {
               setStore("mock-reactions", reactions);
               return { error: null };
             },
-            // handleReact (delete): .delete().eq("post_id", id).eq("user_id", uid)
             delete: () => ({
               eq: (col1: string, val1: any) => ({
                 eq: async (col2: string, val2: any) => {
