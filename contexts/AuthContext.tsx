@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
+import { User, AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
 interface AuthContextType {
@@ -16,20 +16,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true") {
+      // Mock 모드: 세션 스토리지에서 세션 시뮬레이션
+      const savedMockUser = sessionStorage.getItem("mock-user");
+      if (savedMockUser) {
+        setUser(JSON.parse(savedMockUser));
+      }
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
     
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user } }: { data: { user: any } }) => {
       setUser(user);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
+    // 창/탭 닫을 때 로그아웃
+    const handlePageHide = () => {
+      supabase.auth.signOut();
+    };
+    window.addEventListener("pagehide", handlePageHide);
+
     return () => {
       subscription.unsubscribe();
+      window.removeEventListener("pagehide", handlePageHide);
     };
   }, []);
 

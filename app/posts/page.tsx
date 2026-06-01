@@ -9,26 +9,40 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { NewPostButton } from "@/components/NewPostButton";
+import { SearchInput } from "@/components/SearchInput";
 
 export const metadata = {
   title: "게시글 목록 | 블로그",
   description: "블로그의 모든 게시글 목록입니다.",
 };
 
-export default async function PostsPage() {
-  const posts = await getPosts();
+export const dynamic = "force-dynamic";
+
+export default async function PostsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
+  const posts = await getPosts(q);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b">
         <h1 className="text-3xl font-bold tracking-tight">전체 게시글</h1>
-        <Button asChild>
-          <Link href="/posts/new">새 글 쓰기</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <SearchInput />
+          <NewPostButton />
+        </div>
       </div>
 
-      {/* md 이상부터 2열 그리드, 모바일은 1열 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {posts.length === 0 ? (
+        <div className="text-center py-20 bg-muted/20 rounded-xl border-2 border-dashed">
+          <p className="text-muted-foreground">검색 결과가 없거나 게시글이 존재하지 않습니다.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {posts.map((post) => (
           <Card key={post.id} className="rounded-lg shadow-sm flex flex-col h-full">
             <CardHeader>
@@ -49,6 +63,7 @@ export default async function PostsPage() {
           </Card>
         ))}
       </div>
+    )}
     </div>
   );
 }

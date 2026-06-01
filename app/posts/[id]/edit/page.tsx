@@ -66,22 +66,37 @@ export default function EditPostPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // 클라이언트 측 유효성 검증
+    if (title.trim().length < 2) {
+      setError("제목은 최소 2자 이상 입력해주세요.");
+      return;
+    }
+    if (content.trim().length < 10) {
+      setError("내용은 최소 10자 이상 입력해주세요.");
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: updateError } = await supabase
-      .from("posts")
-      .update({ title, content })
-      .eq("id", id);
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase
+        .from("posts")
+        .update({ title, content })
+        .eq("id", id);
 
-    if (updateError) {
-      console.error(updateError);
-      setError("글 수정에 실패했습니다. 다시 시도해 주세요.");
-      setIsSubmitting(false);
-    } else {
+      if (updateError) throw updateError;
+      
       router.push(`/posts/${id}`);
       router.refresh();
+    } catch (err: any) {
+      console.error("Failed to update post:", err);
+      // lib/error-message.ts 유틸리티를 사용하여 친절한 메시지 표시
+      const { getErrorMessage } = await import("@/lib/error-message");
+      setError(getErrorMessage(err));
+      setIsSubmitting(false);
     }
   };
 

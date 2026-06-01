@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithEmail } from "@/lib/auth";
+import { getErrorMessage } from "@/lib/error-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,20 +30,19 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error: signInError } = await signInWithEmail(email, password);
+      const { data, error: signInError } = await signInWithEmail(email, password);
 
       if (signInError) {
-        setError(signInError.message);
+        setError(getErrorMessage(signInError));
       } else {
+        if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true" && data.user) {
+          sessionStorage.setItem("mock-user", JSON.stringify(data.user));
+        }
         setIsSuccessDialogOpen(true);
       }
     } catch (err: any) {
       console.error("Login error:", err);
-      setError(
-        err.message?.includes("supabaseUrl is required")
-          ? "Supabase 환경 변수가 설정되지 않았습니다. .env.local 파일을 확인해 주세요."
-          : err.message || "알 수 없는 오류가 발생했습니다."
-      );
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

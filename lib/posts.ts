@@ -6,17 +6,24 @@ export type Post = {
   title: string;
   content: string;
   created_at: string;
+  image_url?: string | null;
+  view_count?: number;
   profiles?: {
     username: string;
   } | null;
 };
 
-export async function getPosts(): Promise<Post[]> {
+export async function getPosts(query?: string): Promise<Post[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
+  let dbQuery = supabase
     .from('posts')
-    .select('*, profiles(username)')
-    .order('created_at', { ascending: false });
+    .select('*, profiles(username)');
+
+  if (query) {
+    dbQuery = dbQuery.or(`title.ilike.%${query}%,content.ilike.%${query}%`);
+  }
+
+  const { data, error } = await dbQuery.order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching posts:', error);
