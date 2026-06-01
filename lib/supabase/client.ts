@@ -16,21 +16,40 @@ export function createClient() {
         }
       },
       from: (table: string) => ({
-        select: (query: string) => ({
-          eq: (column: string, value: any) => ({
-            maybeSingle: async () => ({ data: { id: "mock-id" }, error: null }),
-            single: async () => ({ data: { id: "mock-id", title: "Mock Title", content: "Mock Content" }, error: null }),
-          }),
-          order: (column: string, { ascending }: any) => ({
-            then: (resolve: any) => resolve({
-              data: [
-                { id: "mock-id-1", title: "Mock Post 1", content: "Content 1", created_at: new Date().toISOString(), profiles: { username: "Mock User" } },
-                { id: "mock-id-2", title: "Mock Post 2", content: "Content 2", created_at: new Date().toISOString(), profiles: { username: "Mock User" } },
-              ],
-              error: null
-            })
-          }),
-        }),
+        select: (query: string) => {
+          if (table === "post_reactions") {
+            return {
+              eq: (column: string, value: any) => ({
+                then: (resolve: any) => resolve({
+                  data: [
+                    { reaction_type: 'like', user_id: 'other-user' },
+                    { reaction_type: 'like', user_id: 'mock-id' },
+                    { reaction_type: 'dislike', user_id: 'another-user' },
+                  ],
+                  error: null
+                })
+              })
+            };
+          }
+          return {
+            eq: (column: string, value: any) => ({
+              maybeSingle: async () => ({ data: { id: "mock-id" }, error: null }),
+              single: async () => ({ data: { id: "mock-id", title: "Mock Title", content: "Mock Content" }, error: null }),
+              limit: (n: number) => ({
+                then: (resolve: any) => resolve({ data: [], error: null })
+              })
+            }),
+            order: (column: string, { ascending }: any) => ({
+              then: (resolve: any) => resolve({
+                data: [
+                  { id: "mock-id-1", title: "Mock Post 1", content: "Content 1", created_at: new Date().toISOString(), profiles: { username: "Mock User" } },
+                  { id: "mock-id-2", title: "Mock Post 2", content: "Content 2", created_at: new Date().toISOString(), profiles: { username: "Mock User" } },
+                ],
+                error: null
+              })
+            }),
+          }
+        },
         insert: (data: any) => ({
           select: (query: string) => ({
             single: async () => {
@@ -39,6 +58,11 @@ export function createClient() {
           })
         }),
         upsert: async () => ({ error: null }),
+        delete: () => ({
+          eq: (column: string, value: any) => ({
+            eq: async (col2: string, val2: any) => ({ error: null })
+          })
+        }),
       }),
       storage: {
         from: (bucket: string) => ({
