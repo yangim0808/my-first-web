@@ -17,6 +17,8 @@ export default function NewPostPage() {
   
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ title?: string; content?: string }>({});
@@ -28,6 +30,18 @@ export default function NewPostPage() {
   }, [user, loading, router]);
 
   if (loading || !user) return null;
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,45 +67,53 @@ export default function NewPostPage() {
     const supabase = createClient();
 
     try {
-      // 1. 프로필이 있는지 먼저 확인
-      const { data: profileExists, error: checkError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error("Profile check error:", checkError);
-        throw new Error("프로필 확인 중 오류가 발생했습니다.");
-      }
-
+      // 1. 프로필 확인 및 생성 (생략 가능하나 안정성을 위해 유지)
+      const { data: profileExists } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
       if (!profileExists) {
-        // 2. 프로필이 없으면 직접 INSERT
-        const { error: insertProfileError } = await supabase.from("profiles").insert({
+        await supabase.from("profiles").insert({
           id: user.id,
           username: user.user_metadata?.name || user.email?.split('@')[0] || "익명 사용자"
         });
-
-        if (insertProfileError) {
-          console.error("Profile insert error:", insertProfileError);
-          throw new Error("프로필 생성 중 오류가 발생했습니다.");
-        }
       }
 
+      // 2. 이미지 업로드
+      let imageUrl = null;
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('post-images')
+          .upload(filePath, imageFile);
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          // 실제 Supabase Bucket이 없을 경우 에러가 날 수 있으므로 경고만 하고 진행할지 여부 결정
+          // 여기서는 필수 기능이므로 에러 처리
+          throw new Error("이미지 업로드에 실패했습니다. (Bucket 설정을 확인해주세요)");
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('post-images')
+          .getPublicUrl(filePath);
+          
+        imageUrl = urlData.publicUrl;
+      }
+
+      // 3. 게시글 저장
       const { data, error: insertError } = await supabase
         .from("posts")
         .insert({
           title,
           content,
+          image_url: imageUrl,
           user_id: user.id
         })
         .select('id')
         .single();
 
-      if (insertError) {
-        console.error("Post insert error:", insertError);
-        throw new Error("글 작성 중 오류가 발생했습니다.");
-      }
+      if (insertError) throw insertError;
 
       router.push(`/posts/${data.id}`);
       router.refresh();
@@ -112,40 +134,69 @@ export default function NewPostPage() {
         </Button>
       </div>
       
-      <Card className="rounded-lg shadow-sm">
+      <Card className="rounded-lg shadow-sm border-none shadow-indigo-100/50">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">새 포스트 작성</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">새 포스트 작성</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-medium">제목</label>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="title" className="text-sm font-semibold">제목</label>
                 <Input
                   id="title"
                   type="text"
-                  placeholder="제목을 입력하세요"
+                  placeholder="무엇에 대해 쓰실 건가요?"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className={fieldErrors.title ? "border-red-500 focus-visible:ring-red-500" : ""}
+                  className={`h-12 text-lg ${fieldErrors.title ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
                 {fieldErrors.title && (
-                  <p className="text-xs text-red-500">{fieldErrors.title}</p>
+                  <p className="text-xs text-red-500 font-medium">{fieldErrors.title}</p>
                 )}
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="content" className="text-sm font-medium">내용</label>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-semibold">대표 이미지 (선택)</label>
+                <div className="flex flex-col gap-4">
+                  <Input
+                    id="image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="cursor-pointer"
+                  />
+                  {imagePreview && (
+                    <div className="relative aspect-video w-full max-w-md rounded-lg overflow-hidden border">
+                      <img src={imagePreview} alt="Preview" className="object-cover w-full h-full" />
+                      <Button 
+                        type="button" 
+                        variant="destructive" 
+                        size="sm" 
+                        className="absolute top-2 right-2 h-7 px-2"
+                        onClick={() => { setImageFile(null); setImagePreview(null); }}
+                      >
+                        삭제
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="content" className="text-sm font-semibold">내용</label>
                 <Textarea
                   id="content"
-                  placeholder="내용을 입력하세요"
-                  rows={12}
+                  placeholder="당신의 이야기를 들려주세요 (10자 이상)"
+                  rows={15}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className={`resize-y ${fieldErrors.content ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                  className={`resize-y min-h-[300px] ${fieldErrors.content ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
                 {fieldErrors.content && (
-                  <p className="text-xs text-red-500">{fieldErrors.content}</p>
+                  <p className="text-xs text-red-500 font-medium">{fieldErrors.content}</p>
                 )}
+              </div>
             </div>
 
             {error && (

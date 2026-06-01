@@ -67,7 +67,17 @@ export default async function PostPage({
           </div>
         </CardHeader>
         
-        <CardContent className="pt-10 pb-12 prose prose-slate max-w-none">
+        {post.image_url && (
+          <div className="w-full aspect-video relative border-b overflow-hidden">
+            <img 
+              src={post.image_url} 
+              alt={post.title} 
+              className="object-cover w-full h-full transition-transform hover:scale-105 duration-700" 
+            />
+          </div>
+        )}
+        
+        <CardContent className="pt-10 pb-12 prose prose-slate max-w-none dark:prose-invert">
           <div className="text-foreground leading-relaxed text-lg space-y-4">
             {post.content.split('\n').map((paragraph: string, index: number) => (
               <p key={index}>
