@@ -2,23 +2,23 @@ import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
   if (process.env.NEXT_PUBLIC_USE_MOCK_AUTH === "true") {
-    // localStorage helpers
+    // sessionStorage helpers
     const getStore = (key: string, fallback: string = "[]") =>
-      typeof window !== "undefined" ? JSON.parse(localStorage.getItem(key) || fallback) : JSON.parse(fallback);
+      typeof window !== "undefined" ? JSON.parse(sessionStorage.getItem(key) || fallback) : JSON.parse(fallback);
     const setStore = (key: string, value: any) => {
-      if (typeof window !== "undefined") localStorage.setItem(key, JSON.stringify(value));
+      if (typeof window !== "undefined") sessionStorage.setItem(key, JSON.stringify(value));
     };
 
     return {
       auth: {
         getUser: async () => ({
-          data: { user: typeof window !== "undefined" ? JSON.parse(localStorage.getItem("mock-user") || "null") : null },
+          data: { user: typeof window !== "undefined" ? JSON.parse(sessionStorage.getItem("mock-user") || "null") : null },
           error: null
         }),
         signInWithPassword: async () => ({ data: { user: { id: "mock-id" } }, error: null }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
         signOut: async () => {
-          if (typeof window !== "undefined") localStorage.removeItem("mock-user");
+          if (typeof window !== "undefined") sessionStorage.removeItem("mock-user");
           return { error: null };
         }
       },
@@ -170,6 +170,7 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
+        storage: typeof window !== "undefined" ? window.sessionStorage : undefined,
         persistSession: true,
       },
     }
